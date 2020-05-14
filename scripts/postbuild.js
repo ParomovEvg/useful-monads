@@ -1,0 +1,17 @@
+const fs = require("fs");
+
+const DIST_LIB_PATH = "lib/";
+const patches = ["README.md", "package.json", "LICENSE", "yarn.lock"];
+
+const PATH_TO = DIST_LIB_PATH;
+
+function copyReadmeIntoDistFolder() {
+  if (!patches.every((path) => fs.existsSync(path))) {
+    throw new Error("README.md does not exist");
+  } else {
+    patches.forEach((path) => {
+      fs.copyFileSync(path, PATH_TO + path);
+    });
+  }
+}
+copyReadmeIntoDistFolder();

@@ -1,0 +1,81 @@
+{
+  "name": "useful-monads",
+  "version": "0.0.0",
+  "description": "A collection of the most popular monads adapted for use in real projects",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "postbuild": "node scripts/postbuild.js",
+    "eslint": "npx npx eslint --ext .ts src",
+    "test": "jest",
+    "test-watch": "jest --watch",
+    "typecheck": "tsc --noEmit --skipLibCheck",
+    "release": "standard-version",
+    "release:patch": "npm run release -- --release-as patch",
+    "release:minor": "npm run release -- --release-as minor",
+    "release:major": "npm run release -- --release-as major",
+    "test:ci": "npm run test && npm run coveralls",
+    "coveralls": "cat coverage/lcov.info | coveralls",
+    "publish": "npm run build && npm publish ./lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ParomovEvg/useful-monads.git"
+  },
+  "keywords": [
+    "either",
+    "maybe",
+    "monads"
+  ],
+  "author": "Evgeny Paromov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ParomovEvg/useful-monads/issues"
+  },
+  "homepage": "https://github.com/ParomovEvg/useful-monads#readme",
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "ts-jest"
+    },
+    "testRegex": "src/.+\\.test\\.ts$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "collectCoverage": true
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged && npm run typecheck"
+    }
+  },
+  "lint-staged": {
+    "*.{html,md,less,json}": [
+      "prettier --write"
+    ],
+    "*.ts": "eslint --fix --config .eslintrc"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
+    "coveralls": "^3.1.0",
+    "cz-conventional-changelog": "^3.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.11.0",
+    "husky": "^4.2.5",
+    "jest": "^25.4.0",
+    "lint-staged": "^10.1.7",
+    "prettier": "^2.0.5",
+    "standard-version": "^7.1.0",
+    "ts-jest": "^25.4.0",
+    "typescript": "^3.8.3"
+  }
+}
