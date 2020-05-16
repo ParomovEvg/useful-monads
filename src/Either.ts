@@ -235,6 +235,13 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> {
     }
     return this.value as R;
   }
+
+  extract(): { left: L; right: null } | { right: R; left: null } {
+    if (this.isLeft()) {
+      return { left: this.value, right: null };
+    }
+    return { right: this.value as R, left: null };
+  }
 }
 
 export const isEither = <L, R>(value: unknown): value is Either<L, R> => {

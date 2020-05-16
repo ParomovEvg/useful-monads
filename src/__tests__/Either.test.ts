@@ -156,6 +156,14 @@ describe("Either tests", () => {
     expect(eitherLeft.orDefault("default")).toBe("default");
   });
 
+  test("extract", () => {
+    const eitherRight = createEither("right");
+    const eitherLeft = createEither("left");
+
+    expect(eitherRight.extract()).toEqual({ right: "success", left: null });
+    expect(eitherLeft.extract()).toEqual({ right: null, left: "error" });
+  });
+
   test("mergeInOne", () => {
     const eitherRight = createEither("right");
     const eitherRight2 = createEither2("right");
