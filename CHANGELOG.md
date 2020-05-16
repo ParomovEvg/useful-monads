@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/ParomovEvg/useful-monads/compare/v0.1.1...v0.2.0) (2020-05-16)
+
+### Features
+
+- add extract Either method ([bbf3f9e](https://github.com/ParomovEvg/useful-monads/commit/bbf3f9e25d2d26c8c4ddf0938592e9e92a399480))
+
 ### [0.1.1](https://github.com/ParomovEvg/useful-monads/compare/v0.1.0...v0.1.1) (2020-05-16)
 
 ## 0.1.0 (2020-05-16)
