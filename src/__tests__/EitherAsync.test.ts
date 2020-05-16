@@ -206,7 +206,17 @@ describe("EitherAsync tests", () => {
 
     expect(await eitherRight.orDefault("default")).toBe("success");
     expect(await eitherLeft.orDefault("default")).toBe("default");
+  });
 
+  test("extract", async () => {
+    const eitherRight = createEither("right");
+    const eitherLeft = createEither("left");
+
+    expect(await eitherRight.extract()).toEqual({
+      right: "success",
+      left: null,
+    });
+    expect(await eitherLeft.extract()).toEqual({ right: null, left: "error" });
   });
 
   test("mergeInOne", async () => {

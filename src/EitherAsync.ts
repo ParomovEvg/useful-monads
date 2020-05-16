@@ -222,6 +222,9 @@ export class EitherAsync<L, R> {
   orDefault<T>(def: T): Promise<R | T> {
     return this.eitherPromise.then((e) => e.orDefault(def));
   }
+  extract(): Promise<{ left: L; right: null } | { right: R; left: null }> {
+    return this.eitherPromise.then((e) => e.extract());
+  }
   run(): Promise<Either<L, R>> {
     return this.eitherPromise;
   }
