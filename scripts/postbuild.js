@@ -1,7 +1,7 @@
 const fs = require("fs");
 
 const DIST_LIB_PATH = "lib/";
-const patches = ["README.md", "package.json", "LICENSE", "yarn.lock"];
+const patches = ["README.md", "package.json", "LICENSE", "package-lock.json"];
 
 const PATH_TO = DIST_LIB_PATH;
 
