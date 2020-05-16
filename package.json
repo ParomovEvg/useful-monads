@@ -1,6 +1,6 @@
 {
   "name": "useful-monads",
-  "version": "0.0.0",
+  "version": "0.1.1",
   "description": "A collection of the most popular monads adapted for use in real projects",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
