@@ -1,4 +1,5 @@
 import { Either, left, right, mergeInOne, isEither } from "..";
+import objectContaining = jasmine.objectContaining;
 
 describe("Either tests", () => {
   test("right", () => {
@@ -160,7 +161,10 @@ describe("Either tests", () => {
     const eitherRight = createEither("right");
     const eitherLeft = createEither("left");
 
-    expect(eitherRight.extract()).toEqual({ right: "success", left: null });
+    expect(eitherRight.extract()).toEqual({
+      right: "success",
+      left: null,
+    });
     expect(eitherLeft.extract()).toEqual({ right: null, left: "error" });
   });
 
@@ -182,5 +186,34 @@ describe("Either tests", () => {
     expect(isEither(createEither("left"))).toBe(true);
     expect(isEither(createEither("right"))).toBe(true);
     expect(isEither({})).toBe(false);
+  });
+
+  describe("context tests", () => {
+    test("Save Context", () => {
+      const eitherRight = createEither("right");
+      const eitherRight2 = createEither2("right");
+      const eitherLeft = createEither("left");
+      expect(
+        eitherRight
+          .saveInContext()
+          .map((r, c) => c + r)
+          .orDefault("")
+      ).toBe("successsuccess");
+
+      expect(
+        eitherRight
+          .mapContext(() => "context" as const)
+          .chain(() => eitherRight2)
+          .mapContext((r, context) => r + context)
+          .extract().context
+      ).toBe("success2context");
+
+      expect(
+        eitherLeft
+          .saveInContext()
+          .chain(() => eitherRight)
+          .extract().context
+      ).toBe(undefined);
+    });
   });
 });

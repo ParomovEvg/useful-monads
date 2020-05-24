@@ -1,4 +1,4 @@
-import { Either, left, mergeInOne, right } from "../Either";
+import { left, right } from "../Either";
 import { EitherAsync, mergeInOneAsync } from "../EitherAsync";
 
 describe("EitherAsync tests", () => {
@@ -226,19 +226,50 @@ describe("EitherAsync tests", () => {
     const eitherLeft2 = EitherAsync.from(Promise.resolve(left("error2")));
 
     expect(
-      await mergeInOneAsync([eitherRight, eitherRight2])
+      await mergeInOneAsync([eitherRight.run(), eitherRight2.run()])
         .run()
         .then((e) => e.value)
     ).toEqual(["success", "success2"]);
     expect(
-      await mergeInOneAsync([eitherRight, eitherLeft])
+      await mergeInOneAsync([eitherRight.run(), eitherLeft.run()])
         .run()
         .then((e) => e.value)
     ).toBe("error");
     expect(
-      await mergeInOneAsync([eitherLeft, eitherLeft2])
+      await mergeInOneAsync([eitherLeft.run(), eitherLeft2.run()])
         .run()
         .then((e) => e.value)
     ).toBe("error2");
+  });
+
+  describe("context tests", () => {
+    test("Save Context", async () => {
+      const eitherRight = createEither("right");
+      const eitherRight2 = EitherAsync.from(Promise.resolve(right("success2")));
+      const eitherLeft = createEither("left");
+      expect(
+        await eitherRight
+          .saveInContext()
+          .map((r, c) => c + r)
+          .orDefault("")
+      ).toBe("successsuccess");
+
+      expect(
+        await eitherRight
+          .mapContext(() => "context" as const)
+          .asyncChain(() => eitherRight2.run())
+          .mapContext((r, context) => r + context)
+          .extract()
+          .then((e) => e.context)
+      ).toBe("success2context");
+
+      expect(
+        await eitherLeft
+          .saveInContext()
+          .asyncChain(() => eitherRight2.run())
+          .extract()
+          .then((e) => e.context)
+      ).toBe(undefined);
+    });
   });
 });

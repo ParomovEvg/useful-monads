@@ -5,7 +5,12 @@ const enum EitherType {
   Right = "Right",
 }
 
-class EitherConstructor<L, R, T extends EitherType = EitherType> {
+class EitherConstructor<
+  L,
+  R,
+  C = undefined,
+  T extends EitherType = EitherType
+> {
   static mergeInOne<L1, R1>(values: [Either<L1, R1>]): Either<L1, [R1]>;
   static mergeInOne<L1, R1, L2, R2>(
     values: [Either<L1, R1>, Either<L2, R2>]
@@ -160,73 +165,112 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> {
     );
   }
 
-  static right<L, T>(v: T): Either<L, T> {
-    return new EitherConstructor<L, T, EitherType.Right>(EitherType.Right, v);
+  static right<L, T, C = undefined>(v: T, context?: C): Either<L, T, C> {
+    return new EitherConstructor<L, T, C, EitherType.Right>(
+      EitherType.Right,
+      v,
+      context as C
+    );
   }
-
-  static left<T, R>(v: T): Either<T, R> {
-    return new EitherConstructor<T, R, EitherType.Left>(EitherType.Left, v);
+  static left<T, R, C = undefined>(v: T): Either<T, R, C> {
+    return new EitherConstructor<T, R, C, EitherType.Left>(
+      EitherType.Left,
+      v,
+      undefined
+    );
   }
 
   private constructor(
     private readonly type: T,
-    public readonly value: T extends EitherType.Left ? L : R
+    public readonly value: T extends EitherType.Left ? L : R,
+    private readonly context: T extends EitherType.Left ? undefined : C
   ) {}
 
-  isLeft(): this is EitherConstructor<L, R, EitherType.Left> {
+  isLeft(): this is EitherConstructor<L, R, C, EitherType.Left> {
     return this.type === EitherType.Left;
   }
 
-  isRight(): this is EitherConstructor<L, R, EitherType.Right> {
+  isRight(): this is EitherConstructor<L, R, C, EitherType.Right> {
     return this.type === EitherType.Right;
   }
 
-  mapLeft<T>(f: (l: L) => T): Either<T, R> {
+  mapLeft<T>(f: (l: L) => T): Either<T, R, C> {
     if (this.isLeft()) {
-      return EitherConstructor.left<T, R>(f(this.value as L));
+      return EitherConstructor.left<T, R, C>(f(this.value as L));
     }
-    return EitherConstructor.right<T, R>(this.value as R);
+    return EitherConstructor.right<T, R, C>(this.value as R, this.context);
   }
 
-  map<T>(f: (r: R) => T): Either<L, T> {
+  map<T>(f: (r: R, context: C) => T): Either<L, T, C> {
     if (this.isLeft()) {
-      return EitherConstructor.left<L, T>(this.value as L);
+      return EitherConstructor.left<L, T, C>(this.value as L);
     }
-    return EitherConstructor.right<L, T>(f(this.value as R));
-  }
-
-  asyncMap<T>(f: (r: R) => Promise<T>): EitherAsync<L, T> {
-    if (this.isLeft()) {
-      return EitherAsync.from(
-        Promise.resolve(EitherConstructor.left<L, T>(this.value as L))
-      );
-    }
-    return EitherAsync.from(
-      f(this.value as R).then((v) => EitherConstructor.right<L, T>(v))
+    return EitherConstructor.right<L, T, C>(
+      f(this.value as R, this.context as C)
     );
   }
 
-  chain<A, B>(f: (r: R) => Either<A, B>): Either<A | L, B> {
+  mapContext<T>(f: (r: R, context: C) => T): Either<L, R, T> {
     if (this.isLeft()) {
-      return EitherConstructor.left<L, B>(this.value as L);
+      return EitherConstructor.left<L, R, T>(this.value as L);
     }
-    return f(this.value as R);
+    return EitherConstructor.right<L, R, T>(
+      this.value as R,
+      f(this.value as R, this.context as C)
+    );
   }
 
-  asyncChain<A, B>(f: (r: R) => Promise<Either<A, B>>): EitherAsync<A | L, B> {
+  asyncMap<T>(f: (r: R, c: C) => Promise<T>): EitherAsync<L, T, C> {
     if (this.isLeft()) {
       return EitherAsync.from(
-        Promise.resolve(EitherConstructor.left<L, B>(this.value))
+        Promise.resolve(EitherConstructor.left<L, T, C>(this.value as L))
       );
     }
-    return EitherAsync.from(f(this.value as R));
+    return EitherAsync.from(
+      f(this.value as R, this.context as C).then((v) =>
+        EitherConstructor.right<L, T, C>(v, this.context)
+      )
+    );
   }
 
-  caseOf<A, B>(obj: { left: (e: L) => A; right: (r: R) => B }): A | B {
+  chain<A, B, NC>(f: (r: R, c: C) => Either<A, B, NC>): Either<A | L, B, C> {
+    if (this.isLeft()) {
+      return EitherConstructor.left<L, B, C>(this.value as L);
+    }
+    const either = f(this.value as R, this.context as C);
+    return either.mapContext(() => this.context as C);
+  }
+
+  asyncChain<A, B, NC>(
+    f: (r: R, c: C) => Promise<Either<A, B, NC>>
+  ): EitherAsync<A | L, B, C> {
+    if (this.isLeft()) {
+      return EitherAsync.from(
+        Promise.resolve(EitherConstructor.left<L, B, C>(this.value))
+      );
+    }
+    return EitherAsync.from(
+      f(this.value as R, this.context as C).then((e) =>
+        e.mapContext(() => this.context as C)
+      )
+    );
+  }
+
+  saveInContext(): Either<L, R, R> {
+    if (this.isLeft()) {
+      return EitherConstructor.left<L, R, R>(this.value);
+    }
+    return EitherConstructor.right<L, R, C>(
+      this.value as R,
+      this.context as C
+    ).mapContext((r) => r);
+  }
+
+  caseOf<A, B>(obj: { left: (e: L) => A; right: (r: R, c: C) => B }): A | B {
     if (this.isLeft()) {
       return obj.left(this.value);
     }
-    return obj.right(this.value as R);
+    return obj.right(this.value as R, this.context as C);
   }
 
   orDefault<T>(def: T): T | R {
@@ -236,20 +280,24 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> {
     return this.value as R;
   }
 
-  extract(): { left: L; right: null } | { right: R; left: null } {
+  extract():
+    | { left: L; right: null; context: undefined }
+    | { right: R; context: C; left: null } {
     if (this.isLeft()) {
-      return { left: this.value, right: null };
+      return { left: this.value, right: null, context: undefined };
     }
-    return { right: this.value as R, left: null };
+    return { right: this.value as R, left: null, context: this.context as C };
   }
 }
 
-export const isEither = <L, R>(value: unknown): value is Either<L, R> => {
+export const isEither = <L, R, C = undefined>(
+  value: unknown
+): value is Either<L, R, C> => {
   return value instanceof EitherConstructor;
 };
 
-export type Either<L, R> =
-  | EitherConstructor<L, R, EitherType.Right>
-  | EitherConstructor<L, R, EitherType.Left>;
+export type Either<L, R, C = undefined> =
+  | EitherConstructor<L, R, C, EitherType.Right>
+  | EitherConstructor<L, R, C, EitherType.Left>;
 
 export const { mergeInOne, left, right } = EitherConstructor;
