@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/ParomovEvg/useful-monads/compare/v0.2.0...v0.3.0) (2020-05-24)
+
+### Features
+
+- **context:** add context ([c8e3f45](https://github.com/ParomovEvg/useful-monads/commit/c8e3f45401a4e8bc896c8b810fa3f468871b7d26))
+
 ## [0.2.0](https://github.com/ParomovEvg/useful-monads/compare/v0.1.1...v0.2.0) (2020-05-16)
 
 ### Features
